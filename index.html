@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User Form</title>
+  <title>User Form with Aadhaar</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,6 +18,7 @@
       border-radius: 10px;
       display: inline-block;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
     }
 
     input {
@@ -60,10 +61,16 @@
     .failure {
       color: red;
     }
+
+    #aadhaarSection {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h2>User Information Form</h2>
+
+  <!-- Step 1: User Info Form -->
   <form id="userForm">
     <input type="text" id="firstName" name="firstName" placeholder="First Name" required />
     <div class="error-message" id="firstNameError"></div>
@@ -77,15 +84,23 @@
     <button type="submit">Submit</button>
   </form>
 
+  <!-- Step 2: Aadhaar Verification -->
+  <form id="aadhaarSection">
+    <h3>Aadhaar Verification</h3>
+    <input type="text" id="aadhaar" name="aadhaar" placeholder="Enter Aadhaar Number" maxlength="12" required />
+    <div class="error-message" id="aadhaarError"></div>
+    <button type="button" id="verifyAadhaarBtn">Verify Aadhaar</button>
+  </form>
+
+  <!-- Response Messages -->
   <div class="response" id="responseMessage"></div>
 
   <script>
     const form = document.getElementById('userForm');
+    const aadhaarForm = document.getElementById('aadhaarSection');
     const responseDiv = document.getElementById('responseMessage');
-
     const fields = ['firstName', 'lastName', 'email'];
 
-    // Utility function to validate form inputs
     function validateForm() {
       let isValid = true;
       fields.forEach(field => {
@@ -110,11 +125,9 @@
           }
         }
       });
-
       return isValid;
     }
 
-    // Handle form submit
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       responseDiv.textContent = '';
@@ -128,11 +141,10 @@
         email: form.email.value.trim()
       };
 
+      // Simulate POST request to Postman mock or real backend
       fetch('https://your-postman-mock-url.com/submit-user', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
       .then(async res => {
@@ -140,8 +152,46 @@
         if (res.ok) {
           responseDiv.textContent = `✅ ${result.message}`;
           responseDiv.classList.add('success');
+          form.style.display = 'none';
+          aadhaarForm.style.display = 'block';
         } else {
           throw new Error(result.message || 'Something went wrong.');
+        }
+      })
+      .catch(err => {
+        responseDiv.textContent = `❌ ${err.message}`;
+        responseDiv.classList.add('failure');
+      });
+    });
+
+    // Aadhaar Validation
+    document.getElementById('verifyAadhaarBtn').addEventListener('click', function () {
+      const aadhaarInput = document.getElementById('aadhaar');
+      const aadhaarError = document.getElementById('aadhaarError');
+      const aadhaarValue = aadhaarInput.value.trim();
+
+      if (!/^\d{12}$/.test(aadhaarValue)) {
+        aadhaarInput.classList.add('error');
+        aadhaarError.textContent = 'Aadhaar must be a 12-digit number.';
+        return;
+      }
+
+      aadhaarInput.classList.remove('error');
+      aadhaarError.textContent = '';
+
+      // Mock Aadhaar verification call
+      fetch('https://your-postman-mock-url.com/verify-aadhaar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aadhaar: aadhaarValue })
+      })
+      .then(async res => {
+        const result = await res.json();
+        if (res.ok) {
+          responseDiv.textContent = `✅ Aadhaar verified: ${result.message}`;
+          responseDiv.classList.add('success');
+        } else {
+          throw new Error(result.message || 'Verification failed');
         }
       })
       .catch(err => {
