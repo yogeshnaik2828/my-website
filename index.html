@@ -11,6 +11,7 @@
       background-color: #f0f0f0;
       text-align: center;
     }
+
     form {
       background: white;
       padding: 30px;
@@ -18,61 +19,136 @@
       display: inline-block;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
     input {
       padding: 10px;
       margin: 10px;
-      width: 200px;
+      width: 220px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
+
+    .error {
+      border-color: red;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 0.9em;
+      margin-top: -10px;
+      margin-bottom: 10px;
+    }
+
     button {
       padding: 10px 20px;
       cursor: pointer;
+      margin-top: 10px;
     }
+
     .response {
       margin-top: 20px;
       font-weight: bold;
+    }
+
+    .success {
       color: green;
+    }
+
+    .failure {
+      color: red;
     }
   </style>
 </head>
 <body>
-<h2>User Information Form</h2>
-<form id="userForm">
-  <input type="text" name="firstName" placeholder="First Name" required /><br/>
-  <input type="text" name="lastName" placeholder="Last Name" required /><br/>
-  <input type="email" name="email" placeholder="Email" required /><br/>
-  <button type="submit">Submit</button>
-</form>
+  <h2>User Information Form</h2>
+  <form id="userForm">
+    <input type="text" id="firstName" name="firstName" placeholder="First Name" required />
+    <div class="error-message" id="firstNameError"></div>
 
-<div class="response" id="responseMessage"></div>
+    <input type="text" id="lastName" name="lastName" placeholder="Last Name" required />
+    <div class="error-message" id="lastNameError"></div>
 
-<script>
-  const form = document.getElementById('userForm');
-  const responseDiv = document.getElementById('responseMessage');
+    <input type="email" id="email" name="email" placeholder="Email" required />
+    <div class="error-message" id="emailError"></div>
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
+    <button type="submit">Submit</button>
+  </form>
 
-    const data = {
-      firstName: form.firstName.value,
-      lastName: form.lastName.value,
-      email: form.email.value
-    };
+  <div class="response" id="responseMessage"></div>
 
-    fetch('https://11897f40-c460-44d6-9611-bd86066cee2f.mock.pstmn.io/submit-user', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(response => {
-      responseDiv.textContent = `Server Response: ${response.message}`;
-    })
-    .catch(err => {
-      responseDiv.textContent = `Error: ${err.message}`;
+  <script>
+    const form = document.getElementById('userForm');
+    const responseDiv = document.getElementById('responseMessage');
+
+    const fields = ['firstName', 'lastName', 'email'];
+
+    // Utility function to validate form inputs
+    function validateForm() {
+      let isValid = true;
+      fields.forEach(field => {
+        const input = document.getElementById(field);
+        const errorDiv = document.getElementById(field + 'Error');
+
+        if (!input.value.trim()) {
+          input.classList.add('error');
+          errorDiv.textContent = `${field.replace(/^\w/, c => c.toUpperCase())} is required.`;
+          isValid = false;
+        } else {
+          input.classList.remove('error');
+          errorDiv.textContent = '';
+        }
+
+        if (field === 'email' && input.value.trim()) {
+          const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+          if (!emailPattern.test(input.value)) {
+            input.classList.add('error');
+            errorDiv.textContent = 'Please enter a valid email.';
+            isValid = false;
+          }
+        }
+      });
+
+      return isValid;
+    }
+
+    // Handle form submit
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      responseDiv.textContent = '';
+      responseDiv.className = 'response';
+
+      if (!validateForm()) return;
+
+      const data = {
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        email: form.email.value.trim()
+      };
+
+      fetch('https://your-postman-mock-url.com/submit-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(async res => {
+        const result = await res.json();
+        if (res.ok) {
+          responseDiv.textContent = `✅ ${result.message}`;
+          responseDiv.classList.add('success');
+        } else {
+          throw new Error(result.message || 'Something went wrong.');
+        }
+      })
+      .catch(err => {
+        responseDiv.textContent = `❌ ${err.message}`;
+        responseDiv.classList.add('failure');
+      });
     });
-  });
-</script>
+  </script>
 </body>
 </html>
