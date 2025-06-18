@@ -1,36 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Website</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Form</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 50px;
-      background-color: #f7f7f7;
+      padding: 40px;
+      background-color: #f0f0f0;
       text-align: center;
     }
-    h1 {
-      color: #333;
-    }
-    p {
-      color: #555;
-    }
-    .container {
+    form {
       background: white;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      padding: 30px;
+      border-radius: 10px;
       display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 200px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .response {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
     }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>👋 Welcome to My Website!</h1>
-  <p>This is a simple site hosted using GitHub Pages.</p>
-  <p>Made with ❤️ by [Your Name]</p>
-</div>
+<h2>User Information Form</h2>
+<form id="userForm">
+  <input type="text" name="firstName" placeholder="First Name" required /><br/>
+  <input type="text" name="lastName" placeholder="Last Name" required /><br/>
+  <input type="email" name="email" placeholder="Email" required /><br/>
+  <button type="submit">Submit</button>
+</form>
+
+<div class="response" id="responseMessage"></div>
+
+<script>
+  const form = document.getElementById('userForm');
+  const responseDiv = document.getElementById('responseMessage');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const data = {
+      firstName: form.firstName.value,
+      lastName: form.lastName.value,
+      email: form.email.value
+    };
+
+    fetch('https://mockapi.example.com/submit-user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(response => {
+      responseDiv.textContent = `Server Response: ${response.message}`;
+    })
+    .catch(err => {
+      responseDiv.textContent = `Error: ${err.message}`;
+    });
+  });
+</script>
 </body>
 </html>
