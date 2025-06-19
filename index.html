@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mock Aadhaar KYC Page</title>
   <style>
     body {
@@ -15,18 +15,19 @@
       background: white;
       padding: 30px;
       border-radius: 10px;
-      width: 300px;
+      width: 320px;
       margin: 0 auto;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-    input {
-      margin: 10px;
+    input, select {
+      margin: 10px 0;
       padding: 10px;
       width: 90%;
     }
     button {
       padding: 10px 20px;
       cursor: pointer;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -34,7 +35,15 @@
   <div class="container">
     <h2>Mock Aadhaar KYC</h2>
     <form id="kycForm">
+      <select id="eventType" required>
+        <option value="">Select Event Type</option>
+        <option value="okyc_success">okyc_success</option>
+        <option value="okyc_failure">okyc_failure</option>
+      </select><br />
+      <input type="text" id="name" placeholder="User Name" required /><br />
       <input type="text" id="aadhaar" placeholder="Aadhaar Number" required /><br />
+      <input type="text" id="gender" placeholder="Gender (M/F)" required /><br />
+      <input type="text" id="dob" placeholder="DOB (dd-mm-yyyy)" required /><br />
       <input type="text" id="otp" placeholder="OTP" required /><br />
       <button type="submit">Verify</button>
     </form>
@@ -45,36 +54,77 @@
     const form = document.getElementById('kycForm');
     const statusText = document.getElementById('status');
 
-    // Get userId and redirect URL from query params
+    // Get values from URL
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
+    const transactionId = urlParams.get('transactionId');
     const redirectUrl = urlParams.get('redirect') || 'zetapp://kyc-success';
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       statusText.innerText = 'Verifying...';
 
-      const aadhaarValue = document.getElementById('aadhaar').value;
+      const eventType = document.getElementById('eventType').value;
+      const name = document.getElementById('name').value;
+      const aadhaar = document.getElementById('aadhaar').value;
+      const gender = document.getElementById('gender').value;
+      const dob = document.getElementById('dob').value;
 
-      // Simulate webhook call to your backend via Postman/WireMock
+      const payload = {
+        eventType,
+        transactionId,
+        userInfo: {
+          userId: userId || 'UNKNOWN',
+          emailId: '',
+          mobile: ''
+        },
+        okycResponse: {
+          referenceId: "260020221208xxxxxxx",
+          aadharNumber: aadhaar,
+          maskedAdharNumber: "xxxxxxxx0000",
+          name: name,
+          gender: gender,
+          dob: dob,
+          careOf: "S/O Jhon sharma",
+          passCode: "XXXXXX",
+          link: "<xml zip link>",
+          address: {
+            house: "1-00",
+            street: "ABC Street",
+            landmark: "",
+            loc: "",
+            po: "Bengaluru",
+            dist: "Bengaluru",
+            subdist: "Bengaluru",
+            vtc: "Marathahalli",
+            pc: "560037",
+            state: "Karnataka",
+            country: "India"
+          },
+          image: "<base64 image>",
+          hashedMobileNumber: "40c7dc82197090cd0c7caffc749add05623d1caeed6913c16c240a1411d1b3ed",
+          hashedEmailId: "40c7dc82197090cd0c7caffc749add05623d1caeed6913c16c240a1411d1b3ed"
+        },
+        care_of: {
+          husbandName: null,
+          fatherName: "Jhon sharma",
+          caretakerName: null
+        }
+      };
+
       try {
-        await fetch('https://11897f40-c460-44d6-9611-bd86066cee2f.mock.pstmn.io/verify-aadhaar', {
+        await fetch('https://webhooks.magnetapp.in/dev/api/v1/credit-builder/okyc', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: userId,
-            status: 'KYC_SUCCESS',
-            aadhaar: aadhaarValue
-          })
+          body: JSON.stringify(payload)
         });
 
-        statusText.innerText = 'KYC Verified. Redirecting...';
+        statusText.innerText = 'KYC Submitted. Redirecting...';
 
-        // Redirect to mobile app after 4 seconds
+        // Redirect to app after 4 seconds
         setTimeout(() => {
           window.location.replace(`${redirectUrl}?userId=${userId}`);
         }, 4000);
-
       } catch (err) {
         console.error(err);
         statusText.innerText = 'Webhook failed';
