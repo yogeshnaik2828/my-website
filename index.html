@@ -1,5 +1,3 @@
-<!-- KYC Mock Flow: Complete Code -->
-<!-- Hosting suggestion: Upload to Netlify/Vercel or host as static on S3/Cloudflare Pages -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,13 +48,15 @@
     // Get userId and redirect URL from query params
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
-const redirectUrl = urlParams.get('redirect') || 'https://zetapp.in/';
+    const redirectUrl = urlParams.get('redirect') || 'zetapp://kyc-success';
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       statusText.innerText = 'Verifying...';
 
-      // Simulate webhook call to your backend via WireMock
+      const aadhaarValue = document.getElementById('aadhaar').value;
+
+      // Simulate webhook call to your backend via Postman or WireMock
       try {
         await fetch('https://11897f40-c460-44d6-9611-bd86066cee2f.mock.pstmn.io/verify-aadhaar', {
           method: 'POST',
@@ -64,18 +64,19 @@ const redirectUrl = urlParams.get('redirect') || 'https://zetapp.in/';
           body: JSON.stringify({
             userId: userId,
             status: 'KYC_SUCCESS',
-            aadhaar: document.getElementById('aadhaar').value,
+            aadhaar: aadhaarValue
           })
         });
 
         statusText.innerText = 'KYC Verified. Redirecting...';
 
-        // Wait 4 seconds then redirect to app
+        // Redirect to mobile app after 4 seconds
         setTimeout(() => {
-          window.location.href = redirectUrl;
+          window.location.href = `${redirectUrl}?userId=${userId}`;
         }, 4000);
 
       } catch (err) {
+        console.error(err);
         statusText.innerText = 'Webhook failed';
       }
     });
