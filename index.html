@@ -1,203 +1,83 @@
+<!-- KYC Mock Flow: Complete Code -->
+<!-- Hosting suggestion: Upload to Netlify/Vercel or host as static on S3/Cloudflare Pages -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User Form with Aadhaar</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock Aadhaar KYC Page</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 40px;
-      background-color: #f0f0f0;
+      background-color: #f5f5f5;
       text-align: center;
+      padding-top: 50px;
     }
-
-    form {
+    .container {
       background: white;
       padding: 30px;
       border-radius: 10px;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 20px;
+      width: 300px;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-
     input {
-      padding: 10px;
       margin: 10px;
-      width: 220px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      padding: 10px;
+      width: 90%;
     }
-
-    .error {
-      border-color: red;
-    }
-
-    .error-message {
-      color: red;
-      font-size: 0.9em;
-      margin-top: -10px;
-      margin-bottom: 10px;
-    }
-
     button {
       padding: 10px 20px;
       cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .response {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-
-    .success {
-      color: green;
-    }
-
-    .failure {
-      color: red;
-    }
-
-    #aadhaarSection {
-      display: none;
     }
   </style>
 </head>
 <body>
-  <h2>User Information Form</h2>
-
-  <!-- Step 1: User Info Form -->
-  <form id="userForm">
-    <input type="text" id="firstName" name="firstName" placeholder="First Name" required />
-    <div class="error-message" id="firstNameError"></div>
-
-    <input type="text" id="lastName" name="lastName" placeholder="Last Name" required />
-    <div class="error-message" id="lastNameError"></div>
-
-    <input type="email" id="email" name="email" placeholder="Email" required />
-    <div class="error-message" id="emailError"></div>
-
-    <button type="submit">Submit</button>
-  </form>
-
-  <!-- Step 2: Aadhaar Verification -->
-  <form id="aadhaarSection">
-    <h3>Aadhaar Verification</h3>
-    <input type="text" id="aadhaar" name="aadhaar" placeholder="Enter Aadhaar Number" maxlength="12" required />
-    <div class="error-message" id="aadhaarError"></div>
-    <button type="button" id="verifyAadhaarBtn">Verify Aadhaar</button>
-  </form>
-
-  <!-- Response Messages -->
-  <div class="response" id="responseMessage"></div>
+  <div class="container">
+    <h2>Mock Aadhaar KYC</h2>
+    <form id="kycForm">
+      <input type="text" id="aadhaar" placeholder="Aadhaar Number" required /><br />
+      <input type="text" id="otp" placeholder="OTP" required /><br />
+      <button type="submit">Verify</button>
+    </form>
+    <p id="status"></p>
+  </div>
 
   <script>
-    const form = document.getElementById('userForm');
-    const aadhaarForm = document.getElementById('aadhaarSection');
-    const responseDiv = document.getElementById('responseMessage');
-    const fields = ['firstName', 'lastName', 'email'];
+    const form = document.getElementById('kycForm');
+    const statusText = document.getElementById('status');
 
-    function validateForm() {
-      let isValid = true;
-      fields.forEach(field => {
-        const input = document.getElementById(field);
-        const errorDiv = document.getElementById(field + 'Error');
+    // Get userId and redirect URL from query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    const redirectUrl = urlParams.get('https://zetapp.in/');
 
-        if (!input.value.trim()) {
-          input.classList.add('error');
-          errorDiv.textContent = `${field.replace(/^\w/, c => c.toUpperCase())} is required.`;
-          isValid = false;
-        } else {
-          input.classList.remove('error');
-          errorDiv.textContent = '';
-        }
-
-        if (field === 'email' && input.value.trim()) {
-          const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-          if (!emailPattern.test(input.value)) {
-            input.classList.add('error');
-            errorDiv.textContent = 'Please enter a valid email.';
-            isValid = false;
-          }
-        }
-      });
-      return isValid;
-    }
-
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
-      responseDiv.textContent = '';
-      responseDiv.className = 'response';
+      statusText.innerText = 'Verifying...';
 
-      if (!validateForm()) return;
+      // Simulate webhook call to your backend via WireMock
+      try {
+        await fetch('https://11897f40-c460-44d6-9611-bd86066cee2f.mock.pstmn.io/verify-aadhaar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userId,
+            status: 'KYC_SUCCESS',
+            aadhaar: document.getElementById('aadhaar').value,
+          })
+        });
 
-      const data = {
-        firstName: form.firstName.value.trim(),
-        lastName: form.lastName.value.trim(),
-        email: form.email.value.trim()
-      };
+        statusText.innerText = 'KYC Verified. Redirecting...';
 
-      // Simulate POST request to Postman mock or real backend
-      fetch('https://11897f40-c460-44d6-9611-bd86066cee2f.mock.pstmn.io/submit-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      .then(async res => {
-        const result = await res.json();
-        if (res.ok) {
-          responseDiv.textContent = `✅ ${result.message}`;
-          responseDiv.classList.add('success');
-          form.style.display = 'none';
-          aadhaarForm.style.display = 'block';
-        } else {
-          throw new Error(result.message || 'Something went wrong.');
-        }
-      })
-      .catch(err => {
-        responseDiv.textContent = `❌ ${err.message}`;
-        responseDiv.classList.add('failure');
-      });
-    });
+        // Wait 4 seconds then redirect to app
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 4000);
 
-    // Aadhaar Validation
-    document.getElementById('verifyAadhaarBtn').addEventListener('click', function () {
-      const aadhaarInput = document.getElementById('aadhaar');
-      const aadhaarError = document.getElementById('aadhaarError');
-      const aadhaarValue = aadhaarInput.value.trim();
-
-      if (!/^\d{12}$/.test(aadhaarValue)) {
-        aadhaarInput.classList.add('error');
-        aadhaarError.textContent = 'Aadhaar must be a 12-digit number.';
-        return;
+      } catch (err) {
+        statusText.innerText = 'Webhook failed';
       }
-
-      aadhaarInput.classList.remove('error');
-      aadhaarError.textContent = '';
-
-      // Mock Aadhaar verification call
-      fetch('https://11897f40-c460-44d6-9611-bd86066cee2f.mock.pstmn.io/verify-aadhaar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ aadhaar: aadhaarValue })
-      })
-      .then(async res => {
-        const result = await res.json();
-        if (res.ok) {
-          responseDiv.textContent = `✅ Aadhaar verified: ${result.message}`;
-          responseDiv.classList.add('success');
-        } else {
-          throw new Error(result.message || 'Verification failed');
-        }
-      })
-      .catch(err => {
-        responseDiv.textContent = `❌ ${err.message}`;
-        responseDiv.classList.add('failure');
-      });
     });
   </script>
 </body>
