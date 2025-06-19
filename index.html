@@ -50,7 +50,7 @@
     // Get userId and redirect URL from query params
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
-    const redirectUrl = urlParams.get('https://zetapp.in/');
+const redirectUrl = urlParams.get('redirect') || 'https://zetapp.in/';
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
