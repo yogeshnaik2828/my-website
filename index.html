@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mock Aadhaar KYC Page</title>
   <style>
     body {
@@ -41,7 +41,6 @@
     <p id="status"></p>
   </div>
 
-  
   <script>
     const form = document.getElementById('kycForm');
     const statusText = document.getElementById('status');
@@ -57,7 +56,7 @@
 
       const aadhaarValue = document.getElementById('aadhaar').value;
 
-      // Simulate webhook call to your backend via Postman or WireMock
+      // Simulate webhook call to your backend via Postman/WireMock
       try {
         await fetch('https://11897f40-c460-44d6-9611-bd86066cee2f.mock.pstmn.io/verify-aadhaar', {
           method: 'POST',
@@ -73,15 +72,8 @@
 
         // Redirect to mobile app after 4 seconds
         setTimeout(() => {
-  const btn = document.createElement('button');
-  btn.innerText = 'Click to go back to app';
-  btn.style.padding = '10px';
-  btn.onclick = () => {
-    window.location.href = `${redirectUrl}?userId=${userId}`;
-  };
-  document.body.appendChild(btn);
-}, 4000);
-
+          window.location.replace(`${redirectUrl}?userId=${userId}`);
+        }, 4000);
 
       } catch (err) {
         console.error(err);
