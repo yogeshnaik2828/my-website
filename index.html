@@ -72,8 +72,15 @@
 
         // Redirect to mobile app after 4 seconds
         setTimeout(() => {
-          window.location.href = `${redirectUrl}?userId=${userId}`;
-        }, 4000);
+  const btn = document.createElement('button');
+  btn.innerText = 'Click to go back to app';
+  btn.style.padding = '10px';
+  btn.onclick = () => {
+    window.location.href = `${redirectUrl}?userId=${userId}`;
+  };
+  document.body.appendChild(btn);
+}, 4000);
+
 
       } catch (err) {
         console.error(err);
