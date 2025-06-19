@@ -54,11 +54,12 @@
     const form = document.getElementById('kycForm');
     const statusText = document.getElementById('status');
 
-    // Get values from URL
+    // Read URL params
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
     const transactionId = urlParams.get('transactionId');
     const redirectUrl = urlParams.get('redirect') || 'zetapp://kyc-success';
+    const failureRedirectUrl = urlParams.get('failureRedirect') || 'zetapp://kyc-failure';
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -119,11 +120,12 @@
           body: JSON.stringify(payload)
         });
 
-        statusText.innerText = 'KYC Submitted. Redirecting...';
+        statusText.innerText = `KYC Submitted. Redirecting...`;
 
-        // Redirect to app after 4 seconds
+        const finalRedirect = eventType === 'okyc_success' ? redirectUrl : failureRedirectUrl;
+
         setTimeout(() => {
-          window.location.replace(`${redirectUrl}?userId=${userId}`);
+          window.location.replace(`${finalRedirect}?userId=${userId}`);
         }, 4000);
       } catch (err) {
         console.error(err);
