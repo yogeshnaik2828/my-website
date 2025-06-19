@@ -62,7 +62,7 @@
     const form = document.getElementById("kycForm");
     const statusText = document.getElementById("status");
 
-    // Get query params
+    // Extract query parameters
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId') || 'test_user';
     const transactionId = urlParams.get('transactionId') || 'txn12345';
@@ -72,21 +72,32 @@
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
+      const eventType = document.getElementById('eventType').value;
+      const name = document.getElementById('name').value;
+      const aadhaar = document.getElementById('aadhaar').value;
+      const gender = document.getElementById('gender').value;
+      const dob = document.getElementById('dob').value;
+
+      if (!eventType || !name || !aadhaar || !gender || !dob) {
+        statusText.innerText = 'Please fill all fields.';
+        return;
+      }
+
       const payload = {
-        eventType: document.getElementById('eventType').value,
+        eventType,
         transactionId,
         userInfo: {
-          userId: userId,
+          userId,
           emailId: "",
           mobile: ""
         },
         okycResponse: {
           referenceId: "260020221208xxxxxxx",
-          aadharNumber: document.getElementById('aadhaar').value,
+          aadharNumber: aadhaar,
           maskedAdharNumber: "xxxxxxxx0000",
-          name: document.getElementById('name').value,
-          gender: document.getElementById('gender').value,
-          dob: document.getElementById('dob').value,
+          name,
+          gender,
+          dob,
           careOf: "S/O Jhon sharma",
           passCode: "XXXXXX",
           link: "<xml zip link>",
@@ -123,9 +134,11 @@
         if (!response.ok) throw new Error("Webhook failed");
 
         statusText.innerText = "KYC submitted. Redirecting...";
+
         setTimeout(() => {
-          const finalUrl = payload.eventType === "okyc_success" ? redirectUrl : failureRedirect;
-          window.location.href = `${finalUrl}?userId=${encodeURIComponent(userId)}`;
+          const finalUrl = eventType === "okyc_success" ? redirectUrl : failureRedirect;
+          // ✅ REDIRECT WITHOUT userId in URL
+          window.location.href = finalUrl;
         }, 2000);
       } catch (error) {
         console.error("Error:", error);
